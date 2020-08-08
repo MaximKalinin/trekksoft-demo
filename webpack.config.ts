@@ -25,7 +25,7 @@ const config: webpack.ConfigurationFactory = (_, argv) => {
     mode: development ? "development" : "production",
     entry: "./src/index",
     output: {
-      path: path.resolve(__dirname, "public"),
+      path: path.resolve(__dirname, "build"),
       filename: development ? "bundle.js" : "bundle.[contenthash].js",
     },
     resolve: {
@@ -73,6 +73,11 @@ const config: webpack.ConfigurationFactory = (_, argv) => {
           },
         },
       ],
+    },
+    devServer: {
+      proxy: {
+        "/": "http://localhost:3000/",
+      },
     },
     plugins: [htmlPlugin, cssPlugin],
   };
