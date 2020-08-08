@@ -1,0 +1,8 @@
+{
+  "name": "trekksoft-demo",
+  "version": "1.0.0",
+  "description": "test assignment",
+  "main": "index.js",
+  "author": "maxim.kalinin.work@gmail.com",
+  "license": "MIT"
+}
