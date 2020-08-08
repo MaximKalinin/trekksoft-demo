@@ -1,0 +1,20 @@
+image: node:latest
+
+pages:
+  stage: deploy
+  script:
+    - yarn config set cache-folder $(pwd)/.yarn-cache
+    - yarn install
+    - yarn test
+    - yarn eslint
+    - yarn prettier
+    - yarn tsc:lint
+    - yarn build
+  cache:
+    paths:
+      - .yarn-cache/
+  artifacts:
+    paths:
+      - public
+  only:
+    - master

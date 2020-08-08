@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "baseUrl": ".",
+    "target": "ES5",
+    "lib": ["dom", "esnext"],
+    "paths": {
+      "@app/*": ["./src/*"]
+    },
+    "plugins": [{ "name": "typescript-plugin-css-modules" }]
+  },
+  "include": ["src/**/*", "src/test/**/*", "typings.d.ts"]
+}
