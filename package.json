@@ -12,7 +12,7 @@
     "prettier": "prettier --check \"./src/**/*.{ts*,js*,*css,json}\"",
     "prettier:fix": "yarn prettier --write",
     "tsc:lint": "tsc --noEmit --project './tsconfig.json'",
-    "test": "jest --config jest.config.js",
+    "test": "jest --config jest.config.js --passWithNoTests",
     "test:watch": "jest --config jest.config.js --watch"
   },
   "dependencies": {
