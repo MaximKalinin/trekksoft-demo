@@ -5,7 +5,8 @@ import thunk from "redux-thunk";
 import { reducer } from "@app/store/reducer";
 import { Provider } from "react-redux";
 
-import { App } from "@app/App";
+import { App } from "@app/containers/app";
+import "@app/global.styles.less";
 
 const store = createStore(reducer, applyMiddleware(thunk));
 
