@@ -1,31 +1,17 @@
-import React, { FC, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
-import axios from "axios";
+import { createStore, applyMiddleware } from "redux";
+import thunk from "redux-thunk";
+import { reducer } from "@app/store/reducer";
+import { Provider } from "react-redux";
 
-const github = axios.create({
-  baseURL: "https://api.github.com/",
-});
+import { App } from "@app/App";
 
-const App: FC = () => {
-  const [query, setQuery] = useState("");
-  return (
-    <div>
-      hello, world!
-      <input value={query} onChange={(e) => setQuery(e.target.value)} />
-      <button
-        disabled={!query}
-        onClick={async () => {
-          const response = await github.get(
-            `/search/users?per_page=1000&page=1&q=${encodeURIComponent(query)}`
-          );
-          github.get("/rate_limit");
-          console.log(response);
-        }}
-      >
-        search
-      </button>
-    </div>
-  );
-};
+const store = createStore(reducer, applyMiddleware(thunk));
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
