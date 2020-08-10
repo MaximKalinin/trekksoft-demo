@@ -9,6 +9,7 @@ import {
   List,
   StartPlaceholder,
   NothingPlaceholder,
+  ErrorPlaceholder,
 } from "@app/components";
 import SwipeableViews from "react-swipeable-views";
 import debounce from "lodash.debounce";
@@ -40,6 +41,44 @@ export const AppEl: FC<
       fetchInfo("Organization");
     }
   }, [searchStatus]);
+
+  let content;
+  if (searchStatus === "not_ready") {
+    content = <StartPlaceholder />;
+  } else if (
+    searchStatus === "error" ||
+    user_info === "error" ||
+    org_info === "error"
+  ) {
+    content = <ErrorPlaceholder />;
+  } else {
+    content = (
+      <>
+        <SwitchHandler
+          users={users}
+          orgs={orgs}
+          activePane={activePane}
+          setActivePane={setActivePane}
+        />
+        <Views
+          activePane={activePane}
+          usersToShow={usersToShow}
+          orgsToShow={orgsToShow}
+          users={users}
+          orgs={orgs}
+          fetchInfo={fetchInfo}
+          user_info={user_info}
+          org_info={org_info}
+          searchStatus={searchStatus}
+          reset={() => {
+            reset();
+            setActivePane(0);
+            setQuery("");
+          }}
+        />
+      </>
+    );
+  }
   return (
     <div className={styles.app}>
       <h1 className={styles.header}>Search for GitHub Users</h1>
@@ -49,34 +88,7 @@ export const AppEl: FC<
         searchAction={searchAction}
         searchStatus={searchStatus}
       />
-      {searchStatus === "not_ready" ? (
-        <StartPlaceholder />
-      ) : (
-        <>
-          <SwitchHandler
-            users={users}
-            orgs={orgs}
-            activePane={activePane}
-            setActivePane={setActivePane}
-          />
-          <Views
-            activePane={activePane}
-            usersToShow={usersToShow}
-            orgsToShow={orgsToShow}
-            users={users}
-            orgs={orgs}
-            fetchInfo={fetchInfo}
-            user_info={user_info}
-            org_info={org_info}
-            searchStatus={searchStatus}
-            reset={() => {
-              reset();
-              setActivePane(0);
-              setQuery("");
-            }}
-          />
-        </>
-      )}
+      {content}
     </div>
   );
 };
