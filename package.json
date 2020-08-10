@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "lodash.debounce": "^4.0.8",
     "lodash.orderby": "^4.6.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

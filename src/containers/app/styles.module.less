@@ -1,5 +1,11 @@
+@import "../../const.less";
+
 .app {
   margin: 40px 32px;
+  @media (min-width: @big_screen) {
+    margin: 79px auto;
+    max-width: 680px;
+  }
 }
 
 .header {
@@ -7,6 +13,9 @@
   max-width: 80%;
   line-height: 130%;
   letter-spacing: 2px;
+  @media (min-width: @big_screen) {
+    margin-bottom: 24px;
+  }
 }
 
 .input {
@@ -24,4 +33,13 @@
   font-weight: 600;
   letter-spacing: 1px;
   color: #506b81;
+}
+
+.lists {
+  display: flex;
+}
+
+.list {
+  flex: 0 0 320px;
+  margin-right: 40px;
 }

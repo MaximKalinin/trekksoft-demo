@@ -5,6 +5,8 @@ import { search, fetchInfo } from "@app/store/actions";
 import { connect } from "react-redux";
 import { Input, Switch, List } from "@app/components";
 import SwipeableViews from "react-swipeable-views";
+import debounce from "lodash.debounce";
+import { BIG_SCREEN } from "@app/const";
 
 import styles from "@app/containers/app/styles.module.less";
 
@@ -108,34 +110,65 @@ const Views: FC<{
   const showMore = (type: Item["type"]) => () => {
     fetchInfo(type);
   };
-  return (
-    <SwipeableViews index={activePane}>
-      <>
-        <List
-          mainFilter={{ text: "USER", property: "name" }}
-          secondaryFilter={secondaryFilter}
-          items={usersToShow}
-        />
-        <button className={styles.more_button} onClick={showMore("User")}>
-          SHOW MORE
-        </button>
-      </>
-      <>
-        <List
-          mainFilter={{ text: "COMPANY", property: "name" }}
-          secondaryFilter={secondaryFilter}
-          items={orgsToShow}
-        />
-        <button
-          className={styles.more_button}
-          onClick={showMore("Organization")}
-        >
-          SHOW MORE
-        </button>
-      </>
-      {/* <List /> */}
-    </SwipeableViews>
+  const smallScreen = useSmallScreen();
+  console.log(smallScreen);
+  const usersList = (
+    <>
+      <List
+        mainFilter={{ text: "USER", property: "name" }}
+        secondaryFilter={secondaryFilter}
+        items={usersToShow}
+      />
+      <button className={styles.more_button} onClick={showMore("User")}>
+        SHOW MORE
+      </button>
+    </>
   );
+  const orgsList = (
+    <>
+      <List
+        mainFilter={{ text: "COMPANY", property: "name" }}
+        secondaryFilter={secondaryFilter}
+        items={orgsToShow}
+      />
+      <button className={styles.more_button} onClick={showMore("Organization")}>
+        SHOW MORE
+      </button>
+    </>
+  );
+  return smallScreen ? (
+    <SwipeableViews index={activePane}>
+      {usersList}
+      {orgsList}
+    </SwipeableViews>
+  ) : (
+    <div className={styles.lists}>
+      <div className={styles.list}>{usersList}</div>
+      <div className={styles.list}>{orgsList}</div>
+    </div>
+  );
+};
+
+const useSmallScreen = () => {
+  const [smallScreen, setSmallScreen] = useState(true);
+  useEffect(() => {
+    const onResize = debounce(() => {
+      console.log(
+        window.innerWidth,
+        BIG_SCREEN,
+        window.innerWidth >= BIG_SCREEN
+      );
+      if (window.innerWidth >= BIG_SCREEN) {
+        setSmallScreen(false);
+        return;
+      }
+      setSmallScreen(true);
+    }, 200);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return smallScreen;
 };
 
 [
