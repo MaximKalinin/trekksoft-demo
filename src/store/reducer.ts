@@ -99,7 +99,7 @@ const showPageReducer = (state = initialState, action): IStore | null => {
       const page = [];
       for (const item of payload) {
         const element = state.search.find(({ login }) => login === item.login);
-        page.push({ ...element, repos: item.repos });
+        page.push({ ...element, repos: item.repos, name: item.name });
       }
       return {
         ...state,

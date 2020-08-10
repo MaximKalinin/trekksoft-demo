@@ -15,10 +15,12 @@ export interface Item {
 
 export interface IPageItem extends Item {
   repos: number;
+  name: string;
 }
 
 export interface IDetailedResponse {
   public_repos: number;
+  name: string;
 }
 
 export interface IStore {

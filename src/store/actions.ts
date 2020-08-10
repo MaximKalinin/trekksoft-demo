@@ -61,12 +61,12 @@ const fetchPublicRepos = async (type: Item["type"], login: Item["login"]) => {
     const response = (await axios.get(`/orgs/${login}`)) as {
       data: IDetailedResponse;
     };
-    return response.data.public_repos;
+    return { repos: response.data.public_repos, name: response.data.name };
   }
   const response = (await axios.get(`/users/${login}`)) as {
     data: IDetailedResponse;
   };
-  return response.data.public_repos;
+  return { repos: response.data.public_repos, name: response.data.name };
 };
 
 export const showPage = (page: number) => async (
@@ -80,10 +80,11 @@ export const showPage = (page: number) => async (
   try {
     const result = await Promise.all(
       search.map(async ({ login, type }) => {
-        const repos = await fetchPublicRepos(type, login);
+        const { repos, name } = await fetchPublicRepos(type, login);
         return {
           login,
           repos,
+          name,
         };
       })
     );
@@ -96,7 +97,7 @@ export const showPage = (page: number) => async (
 export const showPageStart = () => ({ type: SHOW_PAGE_START });
 
 export const showPageSuccess = (
-  items: Array<{ login: string; repos: number }>
+  items: Array<{ login: string; repos: number; name: string }>
 ) => ({
   type: SHOW_PAGE_SUCCESS,
   payload: items,
