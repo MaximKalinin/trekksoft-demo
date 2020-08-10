@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect, useMemo } from "react";
 import { IStore, Item } from "@app/store/model";
 import { ThunkDispatch, TRequestStatus } from "@app/model";
-import { search, fetchInfo } from "@app/store/actions";
+import { search, fetchInfo, reset } from "@app/store/actions";
 import { connect } from "react-redux";
 import {
   Input,
@@ -20,12 +20,13 @@ export const AppEl: FC<
   ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
 > = (props) => {
   const {
-    actions: { search: searchAction, fetchInfo },
+    actions: { search: searchAction, fetchInfo, reset },
     users,
     orgs,
     status: { search: searchStatus, user_info, org_info },
   } = props;
   const [activePane, setActivePane] = useState(0);
+  const [query, setQuery] = useState("");
 
   const usersToShow = useMemo(() => users.filter(({ ready }) => ready), [
     users,
@@ -42,7 +43,12 @@ export const AppEl: FC<
   return (
     <div className={styles.app}>
       <h1 className={styles.header}>Search for GitHub Users</h1>
-      <InputHandler searchAction={searchAction} searchStatus={searchStatus} />
+      <InputHandler
+        query={query}
+        setQuery={setQuery}
+        searchAction={searchAction}
+        searchStatus={searchStatus}
+      />
       {searchStatus === "not_ready" ? (
         <StartPlaceholder />
       ) : (
@@ -63,6 +69,11 @@ export const AppEl: FC<
             user_info={user_info}
             org_info={org_info}
             searchStatus={searchStatus}
+            reset={() => {
+              reset();
+              setActivePane(0);
+              setQuery("");
+            }}
           />
         </>
       )}
@@ -76,6 +87,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch) => ({
   actions: {
     search: (query: string) => dispatch(search(query)),
     fetchInfo: (type: Item["type"]) => dispatch(fetchInfo(type)),
+    reset: () => dispatch(reset()),
   },
 });
 
@@ -84,8 +96,9 @@ export const App = connect(mapStateToProps, mapDispatchToProps)(AppEl);
 const InputHandler: FC<{
   searchAction: (query: string) => void;
   searchStatus: TRequestStatus;
-}> = ({ searchAction, searchStatus }) => {
-  const [query, setQuery] = useState("");
+  query: string;
+  setQuery: (query: string) => void;
+}> = ({ searchAction, searchStatus, query, setQuery }) => {
   return (
     <Input
       loading={searchStatus === "loading"}
@@ -128,6 +141,7 @@ const Views: FC<{
   user_info: TRequestStatus;
   org_info: TRequestStatus;
   searchStatus: TRequestStatus;
+  reset: () => void;
 }> = (props) => {
   const {
     activePane,
@@ -139,6 +153,7 @@ const Views: FC<{
     searchStatus,
     users,
     orgs,
+    reset,
   } = props;
   const secondaryFilter = { text: "PUBLIC REPOS", property: "repos" };
   const showMore = (type: Item["type"]) => () => {
@@ -149,7 +164,7 @@ const Views: FC<{
     searchStatus === "ready" &&
     user_info === "ready" &&
     usersToShow.length === 0 ? (
-      <NothingPlaceholder />
+      <NothingPlaceholder onReset={reset} />
     ) : (
       <>
         <List
@@ -169,7 +184,7 @@ const Views: FC<{
     searchStatus === "ready" &&
     org_info === "ready" &&
     orgsToShow.length === 0 ? (
-      <NothingPlaceholder />
+      <NothingPlaceholder onReset={reset} />
     ) : (
       <>
         <List

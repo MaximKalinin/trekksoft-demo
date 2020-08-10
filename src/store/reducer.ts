@@ -9,6 +9,7 @@ import {
   FETCH_INFO_ORG_START,
   FETCH_INFO_ORG_SUCCESS,
   FETCH_INFO_ORG_FAILURE,
+  RESET,
 } from "@app/store/const";
 import { IStore } from "@app/store/model";
 import {
@@ -35,11 +36,14 @@ const initialState: IStore = {
 
 export const reducer: Reducer<IStore> = (state = initialState, action) => {
   return (
-    searchReducer(state, action) || fetchInfoReducer(state, action) || state
+    searchReducer(state, action) ||
+    fetchInfoReducer(state, action) ||
+    resetReducer(state, action) ||
+    state
   );
 };
 
-const searchReducer = (state = initialState, action): IStore | null => {
+const searchReducer = (state, action): IStore | null => {
   const { status, errors } = state;
   switch (action.type) {
     case SEARCH_START:
@@ -87,7 +91,7 @@ const searchReducer = (state = initialState, action): IStore | null => {
   }
 };
 
-const fetchInfoReducer = (state = initialState, action): IStore | null => {
+const fetchInfoReducer = (state, action): IStore | null => {
   const { status, errors } = state;
   switch (action.type) {
     case FETCH_INFO_USER_START:
@@ -172,7 +176,7 @@ const fetchInfoReducer = (state = initialState, action): IStore | null => {
         },
       };
     }
-    case FETCH_INFO_USER_FAILURE: {
+    case FETCH_INFO_ORG_FAILURE: {
       const { payload } = action as ReturnType<typeof fetchInfoFailure>;
       return {
         ...state,
@@ -186,6 +190,15 @@ const fetchInfoReducer = (state = initialState, action): IStore | null => {
         },
       };
     }
+    default:
+      return null;
+  }
+};
+
+const resetReducer = (_, action): IStore | null => {
+  switch (action.type) {
+    case RESET:
+      return initialState;
     default:
       return null;
   }

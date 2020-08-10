@@ -9,6 +9,7 @@ import {
   FETCH_INFO_ORG_START,
   FETCH_INFO_ORG_SUCCESS,
   FETCH_INFO_ORG_FAILURE,
+  RESET,
 } from "@app/store/const";
 import { cache } from "@app/cache";
 import {
@@ -116,4 +117,8 @@ export const fetchInfoSuccess = (
 export const fetchInfoFailure = (type: Item["type"], error: Error) => ({
   type: type === "User" ? FETCH_INFO_USER_FAILURE : FETCH_INFO_ORG_FAILURE,
   payload: error,
+});
+
+export const reset = () => ({
+  type: RESET,
 });
