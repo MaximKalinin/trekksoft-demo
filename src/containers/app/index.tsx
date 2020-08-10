@@ -116,7 +116,9 @@ const Views: FC<{
           secondaryFilter={secondaryFilter}
           items={usersToShow}
         />
-        <button onClick={showMore("User")}>show more</button>
+        <button className={styles.more_button} onClick={showMore("User")}>
+          SHOW MORE
+        </button>
       </>
       <>
         <List
@@ -124,7 +126,12 @@ const Views: FC<{
           secondaryFilter={secondaryFilter}
           items={orgsToShow}
         />
-        <button onClick={showMore("Organization")}>show more</button>
+        <button
+          className={styles.more_button}
+          onClick={showMore("Organization")}
+        >
+          SHOW MORE
+        </button>
       </>
       {/* <List /> */}
     </SwipeableViews>
