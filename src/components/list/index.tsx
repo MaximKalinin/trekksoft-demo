@@ -60,7 +60,6 @@ export const List: FC<IListProps> = (props) => {
     `${styles.filter__option}${
       activeFilter === filter ? ` ${styles["filter__option--active"]}` : ""
     }`;
-  console.log(sortedItems, items);
   return (
     <div className={styles.list}>
       <div className={styles.filter}>

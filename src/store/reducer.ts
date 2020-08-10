@@ -3,34 +3,34 @@ import {
   SEARCH_START,
   SEARCH_SUCCESS,
   SEARCH_FAILURE,
-  SHOW_PAGE_START,
-  SHOW_PAGE_SUCCESS,
-  SHOW_PAGE_FAILURE,
+  FETCH_INFO_START,
+  FETCH_INFO_SUCCESS,
+  FETCH_INFO_FAILURE,
 } from "@app/store/const";
 import { IStore } from "@app/store/model";
 import {
   searchSuccess,
   searchFailure,
-  showPageSuccess,
-  showPageFailure,
+  fetchInfoSuccess,
+  fetchInfoFailure,
 } from "@app/store/actions";
 
 const initialState: IStore = {
-  search: [],
-  page: [],
+  users: [],
+  orgs: [],
   status: {
     search: "not_ready",
-    page: "not_ready",
+    info: "not_ready",
   },
   errors: {
     search: null,
-    page: null,
+    info: null,
   },
 };
 
 export const reducer: Reducer<IStore> = (state = initialState, action) => {
   return (
-    searchReducer(state, action) || showPageReducer(state, action) || state
+    searchReducer(state, action) || fetchInfoReducer(state, action) || state
   );
 };
 
@@ -51,9 +51,12 @@ const searchReducer = (state = initialState, action): IStore | null => {
       };
     case SEARCH_SUCCESS: {
       const { payload } = action as ReturnType<typeof searchSuccess>;
+      const users = payload.filter(({ type }) => type === "User");
+      const orgs = payload.filter(({ type }) => type === "Organization");
       return {
         ...state,
-        search: payload,
+        users,
+        orgs,
         status: {
           ...status,
           search: "ready",
@@ -79,48 +82,55 @@ const searchReducer = (state = initialState, action): IStore | null => {
   }
 };
 
-const showPageReducer = (state = initialState, action): IStore | null => {
+const fetchInfoReducer = (state = initialState, action): IStore | null => {
   const { status, errors } = state;
   switch (action.type) {
-    case SHOW_PAGE_START:
+    case FETCH_INFO_START:
       return {
         ...state,
         status: {
           ...status,
-          page: "loading",
+          info: "loading",
         },
         errors: {
           ...errors,
-          page: null,
+          info: null,
         },
       };
-    case SHOW_PAGE_SUCCESS: {
-      const { payload } = action as ReturnType<typeof showPageSuccess>;
-      const page = [];
-      for (const item of payload) {
-        const element = state.search.find(({ login }) => login === item.login);
-        page.push({ ...element, repos: item.repos, name: item.name });
-      }
+    case FETCH_INFO_SUCCESS: {
+      const {
+        payload: { items, type },
+      } = action as ReturnType<typeof fetchInfoSuccess>;
+      const key = type === "User" ? "users" : "orgs";
       return {
         ...state,
-        page,
+        [key]: state[key].map((item) => {
+          const info = items.find((infoItem) => infoItem.login === item.login);
+          if (!info) return item;
+          return {
+            ...item,
+            name: info.name,
+            repos: info.repos,
+            ready: true,
+          };
+        }),
         status: {
           ...status,
-          page: "ready",
+          info: "ready",
         },
       };
     }
-    case SHOW_PAGE_FAILURE: {
-      const { payload } = action as ReturnType<typeof showPageFailure>;
+    case FETCH_INFO_FAILURE: {
+      const { payload } = action as ReturnType<typeof fetchInfoFailure>;
       return {
         ...state,
         status: {
           ...status,
-          page: "error",
+          info: "error",
         },
         errors: {
           ...errors,
-          page: payload,
+          info: payload,
         },
       };
     }

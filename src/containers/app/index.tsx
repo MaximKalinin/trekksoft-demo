@@ -1,11 +1,10 @@
 import React, { FC, useState, useEffect, useMemo } from "react";
-import { IStore, IPageItem } from "@app/store/model";
+import { IStore, Item } from "@app/store/model";
 import { ThunkDispatch } from "@app/model";
-import { search, showPage } from "@app/store/actions";
+import { search, fetchInfo } from "@app/store/actions";
 import { connect } from "react-redux";
 import { Input, Switch, List } from "@app/components";
 import SwipeableViews from "react-swipeable-views";
-import { PAGE_SIZE } from "@app/const";
 
 import styles from "@app/containers/app/styles.module.less";
 
@@ -13,36 +12,40 @@ export const AppEl: FC<
   ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
 > = (props) => {
   const {
-    actions: { search: searchAction, showPage },
-    page,
-    status: { search: searchStatus, page: pageStatus },
+    actions: { search: searchAction, fetchInfo },
+    users,
+    orgs,
+    status: { search: searchStatus },
   } = props;
   const [activePane, setActivePane] = useState(0);
 
-  const users = useMemo(() => page.filter(({ type }) => type === "User"), [
-    page,
+  const usersToShow = useMemo(() => users.filter(({ ready }) => ready), [
+    users,
   ]);
 
-  const orgs = useMemo(
-    () => page.filter(({ type }) => type === "Organization"),
-    [page]
-  );
+  const orgsToShow = useMemo(() => orgs.filter(({ ready }) => ready), [orgs]);
 
   useEffect(() => {
     if (searchStatus === "ready") {
-      showPage(1);
+      fetchInfo("User");
+      fetchInfo("Organization");
     }
   }, [searchStatus]);
   return (
     <div className={styles.app}>
       <h1 className={styles.header}>Search for GitHub Users</h1>
       <InputHandler searchAction={searchAction} />
-      <SwitchHandler activePane={activePane} setActivePane={setActivePane} />
-      <Views
-        activePane={activePane}
+      <SwitchHandler
         users={users}
         orgs={orgs}
-        showPage={showPage}
+        activePane={activePane}
+        setActivePane={setActivePane}
+      />
+      <Views
+        activePane={activePane}
+        usersToShow={usersToShow}
+        orgsToShow={orgsToShow}
+        fetchInfo={fetchInfo}
       />
     </div>
   );
@@ -53,7 +56,7 @@ const mapStateToProps = (state: IStore) => state;
 const mapDispatchToProps = (dispatch: ThunkDispatch) => ({
   actions: {
     search: (query: string) => dispatch(search(query)),
-    showPage: (page: number) => dispatch(showPage(page)),
+    fetchInfo: (type: Item["type"]) => dispatch(fetchInfo(type)),
   },
 });
 
@@ -78,8 +81,13 @@ const InputHandler: FC<{
 const SwitchHandler: FC<{
   activePane: number;
   setActivePane: (pane: number) => void;
-}> = ({ setActivePane, activePane }) => {
-  const panes = [{ text: "USERS (504)" }, { text: "COMPANIES (2)" }];
+  users: Item[];
+  orgs: Item[];
+}> = ({ setActivePane, activePane, users, orgs }) => {
+  const panes = [
+    { text: `USERS (${users.length})` },
+    { text: `COMPANIES (${orgs.length})` },
+  ];
   return (
     <Switch
       options={panes}
@@ -91,14 +99,14 @@ const SwitchHandler: FC<{
 
 const Views: FC<{
   activePane: number;
-  users: IPageItem[];
-  orgs: IPageItem[];
-  showPage: (page: number) => void;
+  usersToShow: Item[];
+  orgsToShow: Item[];
+  fetchInfo: (type: Item["type"]) => void;
 }> = (props) => {
-  const { activePane, users, orgs, showPage } = props;
+  const { activePane, usersToShow, orgsToShow, fetchInfo } = props;
   const secondaryFilter = { text: "PUBLIC REPOS", property: "repos" };
-  const showMore = () => {
-    showPage((users.length + orgs.length) / PAGE_SIZE + 1);
+  const showMore = (type: Item["type"]) => () => {
+    fetchInfo(type);
   };
   return (
     <SwipeableViews index={activePane}>
@@ -106,17 +114,17 @@ const Views: FC<{
         <List
           mainFilter={{ text: "USER", property: "name" }}
           secondaryFilter={secondaryFilter}
-          items={users}
+          items={usersToShow}
         />
-        <button onClick={showMore}>show more</button>
+        <button onClick={showMore("User")}>show more</button>
       </>
       <>
         <List
           mainFilter={{ text: "COMPANY", property: "name" }}
           secondaryFilter={secondaryFilter}
-          items={orgs}
+          items={orgsToShow}
         />
-        <button onClick={showMore}>show more</button>
+        <button onClick={showMore("Organization")}>show more</button>
       </>
       {/* <List /> */}
     </SwipeableViews>

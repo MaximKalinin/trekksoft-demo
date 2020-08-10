@@ -11,11 +11,9 @@ export interface Item {
   login: string;
   type: "User" | "Organization";
   avatar_url: string;
-}
-
-export interface IPageItem extends Item {
-  repos: number;
-  name: string;
+  repos?: number;
+  name?: string;
+  ready: boolean;
 }
 
 export interface IDetailedResponse {
@@ -24,14 +22,14 @@ export interface IDetailedResponse {
 }
 
 export interface IStore {
-  search: Array<Item>;
-  page: Array<IPageItem>;
+  users: Item[];
+  orgs: Item[];
   status: {
     search: TRequestStatus;
-    page: TRequestStatus;
+    info: TRequestStatus;
   };
   errors: {
     search: Error | null;
-    page: Error | null;
+    info: Error | null;
   };
 }

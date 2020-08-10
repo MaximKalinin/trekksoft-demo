@@ -3,9 +3,9 @@ import {
   SEARCH_START,
   SEARCH_SUCCESS,
   SEARCH_FAILURE,
-  SHOW_PAGE_START,
-  SHOW_PAGE_SUCCESS,
-  SHOW_PAGE_FAILURE,
+  FETCH_INFO_START,
+  FETCH_INFO_SUCCESS,
+  FETCH_INFO_FAILURE,
 } from "@app/store/const";
 import { cache } from "@app/cache";
 import {
@@ -69,17 +69,21 @@ const fetchPublicRepos = async (type: Item["type"], login: Item["login"]) => {
   return { repos: response.data.public_repos, name: response.data.name };
 };
 
-export const showPage = (page: number) => async (
+export const fetchInfo = (type: Item["type"]) => async (
   dispatch: Dispatch,
   getState: () => IStore
 ) => {
-  dispatch(showPageStart());
-  const search = getState().search.filter(
-    (_, index) => index >= (page - 1) * PAGE_SIZE && index < page * PAGE_SIZE
-  );
+  dispatch(fetchInfoStart());
+  const key = type === "User" ? "users" : "orgs";
+  const items = [];
+  getState()[key].forEach((item) => {
+    if (!item.ready && items.length < PAGE_SIZE) {
+      items.push(item);
+    }
+  });
   try {
     const result = await Promise.all(
-      search.map(async ({ login, type }) => {
+      items.map(async ({ login }) => {
         const { repos, name } = await fetchPublicRepos(type, login);
         return {
           login,
@@ -88,22 +92,26 @@ export const showPage = (page: number) => async (
         };
       })
     );
-    dispatch(showPageSuccess(result));
+    dispatch(fetchInfoSuccess(type, result));
   } catch (e) {
-    dispatch(showPageFailure(e));
+    dispatch(fetchInfoFailure(e));
   }
 };
 
-export const showPageStart = () => ({ type: SHOW_PAGE_START });
+export const fetchInfoStart = () => ({ type: FETCH_INFO_START });
 
-export const showPageSuccess = (
+export const fetchInfoSuccess = (
+  type: Item["type"],
   items: Array<{ login: string; repos: number; name: string }>
 ) => ({
-  type: SHOW_PAGE_SUCCESS,
-  payload: items,
+  type: FETCH_INFO_SUCCESS,
+  payload: {
+    items,
+    type,
+  },
 });
 
-export const showPageFailure = (error: Error) => ({
-  type: SHOW_PAGE_FAILURE,
+export const fetchInfoFailure = (error: Error) => ({
+  type: FETCH_INFO_FAILURE,
   payload: error,
 });
