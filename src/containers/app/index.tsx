@@ -4,6 +4,7 @@ import { ThunkDispatch } from "@app/model";
 import { search, showPage } from "@app/store/actions";
 import { connect } from "react-redux";
 import { Input, Switch } from "@app/components";
+import SwipeableViews from "react-swipeable-views";
 
 import styles from "@app/containers/app/styles.module.less";
 
@@ -27,6 +28,7 @@ export const AppEl: FC<
       <h1 className={styles.header}>Search for GitHub Users</h1>
       <InputHandler searchAction={searchAction} />
       <SwitchHandler activePane={activePane} setActivePane={setActivePane} />
+      <Views activePane={activePane} />
       {pageStatus === "ready" && (
         <div>
           {page.map(({ id, avatar_url }) => (
@@ -76,5 +78,15 @@ const SwitchHandler: FC<{
       activeOptionId={activePane}
       onActiveChange={setActivePane}
     />
+  );
+};
+
+const Views: FC<{ activePane: number }> = (props) => {
+  const { activePane } = props;
+  return (
+    <SwipeableViews index={activePane}>
+      <div>hello</div>
+      <div>world</div>
+    </SwipeableViews>
   );
 };
