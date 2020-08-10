@@ -26,10 +26,12 @@ export interface IStore {
   orgs: Item[];
   status: {
     search: TRequestStatus;
-    info: TRequestStatus;
+    user_info: TRequestStatus;
+    org_info: TRequestStatus;
   };
   errors: {
     search: Error | null;
-    info: Error | null;
+    user_info: Error | null;
+    org_info: Error | null;
   };
 }

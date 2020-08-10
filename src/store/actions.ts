@@ -3,9 +3,12 @@ import {
   SEARCH_START,
   SEARCH_SUCCESS,
   SEARCH_FAILURE,
-  FETCH_INFO_START,
-  FETCH_INFO_SUCCESS,
-  FETCH_INFO_FAILURE,
+  FETCH_INFO_USER_START,
+  FETCH_INFO_USER_SUCCESS,
+  FETCH_INFO_USER_FAILURE,
+  FETCH_INFO_ORG_START,
+  FETCH_INFO_ORG_SUCCESS,
+  FETCH_INFO_ORG_FAILURE,
 } from "@app/store/const";
 import { cache } from "@app/cache";
 import {
@@ -73,7 +76,7 @@ export const fetchInfo = (type: Item["type"]) => async (
   dispatch: Dispatch,
   getState: () => IStore
 ) => {
-  dispatch(fetchInfoStart());
+  dispatch(fetchInfoStart(type));
   const key = type === "User" ? "users" : "orgs";
   const items = [];
   getState()[key].forEach((item) => {
@@ -94,24 +97,23 @@ export const fetchInfo = (type: Item["type"]) => async (
     );
     dispatch(fetchInfoSuccess(type, result));
   } catch (e) {
-    dispatch(fetchInfoFailure(e));
+    dispatch(fetchInfoFailure(type, e));
   }
 };
 
-export const fetchInfoStart = () => ({ type: FETCH_INFO_START });
+export const fetchInfoStart = (type: Item["type"]) => ({
+  type: type === "User" ? FETCH_INFO_USER_START : FETCH_INFO_ORG_START,
+});
 
 export const fetchInfoSuccess = (
   type: Item["type"],
   items: Array<{ login: string; repos: number; name: string }>
 ) => ({
-  type: FETCH_INFO_SUCCESS,
-  payload: {
-    items,
-    type,
-  },
+  type: type === "User" ? FETCH_INFO_USER_SUCCESS : FETCH_INFO_ORG_SUCCESS,
+  payload: items,
 });
 
-export const fetchInfoFailure = (error: Error) => ({
-  type: FETCH_INFO_FAILURE,
+export const fetchInfoFailure = (type: Item["type"], error: Error) => ({
+  type: type === "User" ? FETCH_INFO_USER_FAILURE : FETCH_INFO_ORG_FAILURE,
   payload: error,
 });

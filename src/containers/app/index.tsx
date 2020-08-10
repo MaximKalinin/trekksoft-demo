@@ -1,6 +1,6 @@
 import React, { FC, useState, useEffect, useMemo } from "react";
 import { IStore, Item } from "@app/store/model";
-import { ThunkDispatch } from "@app/model";
+import { ThunkDispatch, TRequestStatus } from "@app/model";
 import { search, fetchInfo } from "@app/store/actions";
 import { connect } from "react-redux";
 import {
@@ -23,7 +23,7 @@ export const AppEl: FC<
     actions: { search: searchAction, fetchInfo },
     users,
     orgs,
-    status: { search: searchStatus },
+    status: { search: searchStatus, user_info, org_info },
   } = props;
   const [activePane, setActivePane] = useState(0);
 
@@ -42,8 +42,10 @@ export const AppEl: FC<
   return (
     <div className={styles.app}>
       <h1 className={styles.header}>Search for GitHub Users</h1>
-      <InputHandler searchAction={searchAction} />
-      {searchStatus === "ready" ? (
+      <InputHandler searchAction={searchAction} searchStatus={searchStatus} />
+      {searchStatus === "not_ready" ? (
+        <StartPlaceholder />
+      ) : (
         <>
           <SwitchHandler
             users={users}
@@ -55,11 +57,14 @@ export const AppEl: FC<
             activePane={activePane}
             usersToShow={usersToShow}
             orgsToShow={orgsToShow}
+            users={users}
+            orgs={orgs}
             fetchInfo={fetchInfo}
+            user_info={user_info}
+            org_info={org_info}
+            searchStatus={searchStatus}
           />
         </>
-      ) : (
-        <StartPlaceholder />
       )}
     </div>
   );
@@ -78,10 +83,12 @@ export const App = connect(mapStateToProps, mapDispatchToProps)(AppEl);
 
 const InputHandler: FC<{
   searchAction: (query: string) => void;
-}> = ({ searchAction }) => {
+  searchStatus: TRequestStatus;
+}> = ({ searchAction, searchStatus }) => {
   const [query, setQuery] = useState("");
   return (
     <Input
+      loading={searchStatus === "loading"}
       placeholder="Type a user name here"
       value={query}
       onChange={(e) => setQuery(e.target.value)}
@@ -115,16 +122,32 @@ const Views: FC<{
   activePane: number;
   usersToShow: Item[];
   orgsToShow: Item[];
+  users: Item[];
+  orgs: Item[];
   fetchInfo: (type: Item["type"]) => void;
+  user_info: TRequestStatus;
+  org_info: TRequestStatus;
+  searchStatus: TRequestStatus;
 }> = (props) => {
-  const { activePane, usersToShow, orgsToShow, fetchInfo } = props;
+  const {
+    activePane,
+    usersToShow,
+    orgsToShow,
+    fetchInfo,
+    user_info,
+    org_info,
+    searchStatus,
+    users,
+    orgs,
+  } = props;
   const secondaryFilter = { text: "PUBLIC REPOS", property: "repos" };
   const showMore = (type: Item["type"]) => () => {
     fetchInfo(type);
   };
   const smallScreen = useSmallScreen();
-  console.log(smallScreen);
   const usersList =
+    searchStatus === "ready" &&
+    user_info === "ready" &&
     usersToShow.length === 0 ? (
       <NothingPlaceholder />
     ) : (
@@ -134,12 +157,17 @@ const Views: FC<{
           secondaryFilter={secondaryFilter}
           items={usersToShow}
         />
-        <button className={styles.more_button} onClick={showMore("User")}>
-          SHOW MORE
-        </button>
+        {user_info === "loading" ||
+        users.length === usersToShow.length ? null : (
+          <button className={styles.more_button} onClick={showMore("User")}>
+            SHOW MORE
+          </button>
+        )}
       </>
     );
   const orgsList =
+    searchStatus === "ready" &&
+    org_info === "ready" &&
     orgsToShow.length === 0 ? (
       <NothingPlaceholder />
     ) : (
@@ -149,12 +177,14 @@ const Views: FC<{
           secondaryFilter={secondaryFilter}
           items={orgsToShow}
         />
-        <button
-          className={styles.more_button}
-          onClick={showMore("Organization")}
-        >
-          SHOW MORE
-        </button>
+        {user_info === "loading" || orgsToShow.length === orgs.length ? null : (
+          <button
+            className={styles.more_button}
+            onClick={showMore("Organization")}
+          >
+            SHOW MORE
+          </button>
+        )}
       </>
     );
   return smallScreen ? (
@@ -174,11 +204,6 @@ const useSmallScreen = () => {
   const [smallScreen, setSmallScreen] = useState(true);
   useEffect(() => {
     const onResize = debounce(() => {
-      console.log(
-        window.innerWidth,
-        BIG_SCREEN,
-        window.innerWidth >= BIG_SCREEN
-      );
       if (window.innerWidth >= BIG_SCREEN) {
         setSmallScreen(false);
         return;

@@ -3,9 +3,12 @@ import {
   SEARCH_START,
   SEARCH_SUCCESS,
   SEARCH_FAILURE,
-  FETCH_INFO_START,
-  FETCH_INFO_SUCCESS,
-  FETCH_INFO_FAILURE,
+  FETCH_INFO_USER_START,
+  FETCH_INFO_USER_SUCCESS,
+  FETCH_INFO_USER_FAILURE,
+  FETCH_INFO_ORG_START,
+  FETCH_INFO_ORG_SUCCESS,
+  FETCH_INFO_ORG_FAILURE,
 } from "@app/store/const";
 import { IStore } from "@app/store/model";
 import {
@@ -20,11 +23,13 @@ const initialState: IStore = {
   orgs: [],
   status: {
     search: "not_ready",
-    info: "not_ready",
+    user_info: "not_ready",
+    org_info: "not_ready",
   },
   errors: {
     search: null,
-    info: null,
+    user_info: null,
+    org_info: null,
   },
 };
 
@@ -85,27 +90,26 @@ const searchReducer = (state = initialState, action): IStore | null => {
 const fetchInfoReducer = (state = initialState, action): IStore | null => {
   const { status, errors } = state;
   switch (action.type) {
-    case FETCH_INFO_START:
+    case FETCH_INFO_USER_START:
       return {
         ...state,
         status: {
           ...status,
-          info: "loading",
+          user_info: "loading",
         },
         errors: {
           ...errors,
-          info: null,
+          user_info: null,
         },
       };
-    case FETCH_INFO_SUCCESS: {
-      const {
-        payload: { items, type },
-      } = action as ReturnType<typeof fetchInfoSuccess>;
-      const key = type === "User" ? "users" : "orgs";
+    case FETCH_INFO_USER_SUCCESS: {
+      const { payload } = action as ReturnType<typeof fetchInfoSuccess>;
       return {
         ...state,
-        [key]: state[key].map((item) => {
-          const info = items.find((infoItem) => infoItem.login === item.login);
+        users: state.users.map((item) => {
+          const info = payload.find(
+            (infoItem) => infoItem.login === item.login
+          );
           if (!info) return item;
           return {
             ...item,
@@ -116,21 +120,69 @@ const fetchInfoReducer = (state = initialState, action): IStore | null => {
         }),
         status: {
           ...status,
-          info: "ready",
+          user_info: "ready",
         },
       };
     }
-    case FETCH_INFO_FAILURE: {
+    case FETCH_INFO_USER_FAILURE: {
       const { payload } = action as ReturnType<typeof fetchInfoFailure>;
       return {
         ...state,
         status: {
           ...status,
-          info: "error",
+          user_info: "error",
         },
         errors: {
           ...errors,
-          info: payload,
+          user_info: payload,
+        },
+      };
+    }
+    case FETCH_INFO_ORG_START:
+      return {
+        ...state,
+        status: {
+          ...status,
+          org_info: "loading",
+        },
+        errors: {
+          ...errors,
+          org_info: null,
+        },
+      };
+    case FETCH_INFO_ORG_SUCCESS: {
+      const { payload } = action as ReturnType<typeof fetchInfoSuccess>;
+      return {
+        ...state,
+        orgs: state.orgs.map((item) => {
+          const info = payload.find(
+            (infoItem) => infoItem.login === item.login
+          );
+          if (!info) return item;
+          return {
+            ...item,
+            name: info.name,
+            repos: info.repos,
+            ready: true,
+          };
+        }),
+        status: {
+          ...status,
+          org_info: "ready",
+        },
+      };
+    }
+    case FETCH_INFO_USER_FAILURE: {
+      const { payload } = action as ReturnType<typeof fetchInfoFailure>;
+      return {
+        ...state,
+        status: {
+          ...status,
+          org_info: "error",
+        },
+        errors: {
+          ...errors,
+          org_info: payload,
         },
       };
     }
