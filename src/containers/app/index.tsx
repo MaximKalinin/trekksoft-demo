@@ -3,7 +3,13 @@ import { IStore, Item } from "@app/store/model";
 import { ThunkDispatch } from "@app/model";
 import { search, fetchInfo } from "@app/store/actions";
 import { connect } from "react-redux";
-import { Input, Switch, List } from "@app/components";
+import {
+  Input,
+  Switch,
+  List,
+  StartPlaceholder,
+  NothingPlaceholder,
+} from "@app/components";
 import SwipeableViews from "react-swipeable-views";
 import debounce from "lodash.debounce";
 import { BIG_SCREEN } from "@app/const";
@@ -37,18 +43,24 @@ export const AppEl: FC<
     <div className={styles.app}>
       <h1 className={styles.header}>Search for GitHub Users</h1>
       <InputHandler searchAction={searchAction} />
-      <SwitchHandler
-        users={users}
-        orgs={orgs}
-        activePane={activePane}
-        setActivePane={setActivePane}
-      />
-      <Views
-        activePane={activePane}
-        usersToShow={usersToShow}
-        orgsToShow={orgsToShow}
-        fetchInfo={fetchInfo}
-      />
+      {searchStatus === "ready" ? (
+        <>
+          <SwitchHandler
+            users={users}
+            orgs={orgs}
+            activePane={activePane}
+            setActivePane={setActivePane}
+          />
+          <Views
+            activePane={activePane}
+            usersToShow={usersToShow}
+            orgsToShow={orgsToShow}
+            fetchInfo={fetchInfo}
+          />
+        </>
+      ) : (
+        <StartPlaceholder />
+      )}
     </div>
   );
 };
@@ -112,30 +124,39 @@ const Views: FC<{
   };
   const smallScreen = useSmallScreen();
   console.log(smallScreen);
-  const usersList = (
-    <>
-      <List
-        mainFilter={{ text: "USER", property: "name" }}
-        secondaryFilter={secondaryFilter}
-        items={usersToShow}
-      />
-      <button className={styles.more_button} onClick={showMore("User")}>
-        SHOW MORE
-      </button>
-    </>
-  );
-  const orgsList = (
-    <>
-      <List
-        mainFilter={{ text: "COMPANY", property: "name" }}
-        secondaryFilter={secondaryFilter}
-        items={orgsToShow}
-      />
-      <button className={styles.more_button} onClick={showMore("Organization")}>
-        SHOW MORE
-      </button>
-    </>
-  );
+  const usersList =
+    usersToShow.length === 0 ? (
+      <NothingPlaceholder />
+    ) : (
+      <>
+        <List
+          mainFilter={{ text: "USER", property: "name" }}
+          secondaryFilter={secondaryFilter}
+          items={usersToShow}
+        />
+        <button className={styles.more_button} onClick={showMore("User")}>
+          SHOW MORE
+        </button>
+      </>
+    );
+  const orgsList =
+    orgsToShow.length === 0 ? (
+      <NothingPlaceholder />
+    ) : (
+      <>
+        <List
+          mainFilter={{ text: "COMPANY", property: "name" }}
+          secondaryFilter={secondaryFilter}
+          items={orgsToShow}
+        />
+        <button
+          className={styles.more_button}
+          onClick={showMore("Organization")}
+        >
+          SHOW MORE
+        </button>
+      </>
+    );
   return smallScreen ? (
     <SwipeableViews index={activePane}>
       {usersList}
