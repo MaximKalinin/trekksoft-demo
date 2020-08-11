@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`List component should match snapshot 1`] = `
+<div
+  className="list"
+>
+  <div
+    className="filter"
+  >
+    <div
+      className="filter__option"
+      onClick={[Function]}
+    />
+    <div
+      className="filter__option filter__option--active"
+      onClick={[Function]}
+    />
+  </div>
+  <div />
+</div>
+`;
